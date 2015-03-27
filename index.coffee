@@ -24,7 +24,13 @@ formatLink = (message) ->
 
 formatProse = (message) ->
   if IrcColors?
-    "#{IrcColors.gray(message)}"
+    # handle newlines
+    lines = message.split(/\r\n|\r|\n/g)
+    result = ""
+    for line in lines
+      result = result + "#{IrcColors.gray(line)}" + "\n"
+
+    result
   else
     "#{message}"
 
