@@ -13,14 +13,9 @@ module.exports = (robot) ->
     # this cannot be the best way to get a web link to the issue
     url = data.issue.self.replace /rest.*$/, "browse/" + data.issue.key
 
-    components = '';
-    first = true
+    components = [];
     for comp in data.issue.fields.components
-      if first
-        components = components + comp.name
-        first = false
-      else
-        components = components + ", " + comp.name
+        components.push(comp.name)
 
     if data.webhookEvent == "jira:issue_created"
 
@@ -32,35 +27,36 @@ module.exports = (robot) ->
       
       headline = 'Issue updated' 
       msg = ' "' + data.issue.fields.summary + '"'
-      msg = msg + ' by ' + data.user.name
 
-      # did only one field change?
-      if data.changelog.items.length == 1
-        change = data.changelog.items[0]
-        msg = msg + " - " + change.field + " is now " + change.toString
+      if data.changelog
+        msg = msg + ' by ' + data.user.name
+        # did only one field change?
+        if data.changelog.items.length == 1
+          change = data.changelog.items[0]
+          msg = msg + " - " + change.field + " is now " + change.toString
 
-      else
-        first = true
-        for change in data.changelog.items 
-          # handle if the issue was closed
-          if change.field == "resolution" and change.toString == "Fixed"
-            headline = "Issue closed"
+        else
+          fields = []
+          for change in data.changelog.items 
+            # handle if the issue was closed
+            if change.field == "resolution" and change.toString == "Fixed"
+              headline = "Issue closed"
 
-          # Now give field details
-          if first
-            msg = msg + ": " + change.field
-            first = false
-          else
-            msg = msg + ", " + change.field
-        
-        msg = msg + " updated" 
+            # Now give field details
+            fields.push(change.field)
+
+          msg = msg + ": " + fields.join(", ") + " updated" 
+
+      else if data.comment
+        headline = "New comment on"
+        msg = msg + ": " + data.comment.body
 
       msg = headline + msg + ' (' + url + ')'
 
     else
       msg = "A " + data.webhookEvent + " happened on " + url
 
-    msg = "[" + components + "] " + msg
+    msg = "[" + components.join(", ") + "] " + msg
     robot.messageRoom targetRoom, msg
     res.send 'OK'
 
