@@ -78,7 +78,12 @@ module.exports = (robot) ->
           msg = msg + ": " + fields.join(", ") + " updated" 
 
       else if data.comment
-        headline = "New comment on"
+        # add or edit?
+        if data.comment.created == data.comment.updated
+          headline = "New comment on"
+        else
+          headline = "Comment edited on"
+
         msg = msg + ": " + formatProse(data.comment.body)
 
       msg = headline + msg + ' (' + formatLink(url) + ')'
