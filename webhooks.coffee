@@ -35,6 +35,7 @@ issueUpdated = (data, url) ->
     else
       headline = "Comment edited on"
 
+    msg = msg + ' by ' + utils.formatUser(data.comment.author.name)
     msg = msg + ": " + utils.formatProse(data.comment.body)
 
   msg = headline + msg + ' (' + utils.formatLink(url) + ')'
