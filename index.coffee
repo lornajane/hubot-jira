@@ -6,6 +6,29 @@
 
 targetRoom = process.env['HUBOT_JIRA_ROOM']
 
+enableColors = process.env['HUBOT_JIRA_IRC_COLORS']
+if enableColors?
+  IrcColors = require "irc-colors"
+
+formatUser = (message) ->
+  if IrcColors?
+    "#{IrcColors.pink(message)}"
+  else
+    "#{message}"
+
+formatLink = (message) ->
+  if IrcColors?
+    "#{IrcColors.blue(message)}"
+  else
+    "#{message}"
+
+formatProse = (message) ->
+  if IrcColors?
+    "#{IrcColors.gray(message)}"
+  else
+    "#{message}"
+
+
 module.exports = (robot) ->
   robot.router.post '/hubot/jira', (req, res) ->
     data   = if req.body.payload? then JSON.parse req.body.payload else req.body
@@ -20,8 +43,8 @@ module.exports = (robot) ->
     if data.webhookEvent == "jira:issue_created"
 
       msg = 'New issue "' + data.issue.fields.summary + '"'
-      msg = msg + ' created by ' + data.user.name
-      msg = msg + ' (' + url + ')'
+      msg = msg + ' created by ' + formatUser(data.user.name)
+      msg = msg + ' (' + formatLink(url) + ')'
 
     else if data.webhookEvent == "jira:issue_updated"
       
@@ -29,7 +52,7 @@ module.exports = (robot) ->
       msg = ' "' + data.issue.fields.summary + '"'
 
       if data.changelog
-        msg = msg + ' by ' + data.user.name
+        msg = msg + ' by ' + formatUser(data.user.name)
         # did only one field change?
         if data.changelog.items.length == 1
           change = data.changelog.items[0]
@@ -49,9 +72,9 @@ module.exports = (robot) ->
 
       else if data.comment
         headline = "New comment on"
-        msg = msg + ": " + data.comment.body
+        msg = msg + ": " + formatProse(data.comment.body)
 
-      msg = headline + msg + ' (' + url + ')'
+      msg = headline + msg + ' (' + formatLink(url) + ')'
 
     else
       msg = "A " + data.webhookEvent + " happened on " + url
