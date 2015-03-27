@@ -4,6 +4,8 @@
 # Author
 #   lornajane
 
+targetRoom = process.env['HUBOT_JIRA_ROOM']
+
 module.exports = (robot) ->
   robot.router.post '/hubot/jira', (req, res) ->
     data   = if req.body.payload? then JSON.parse req.body.payload else req.body
@@ -49,6 +51,6 @@ module.exports = (robot) ->
     else
       msg = "A " + data.webhookEvent + " happened on " + url
 
-    robot.messageRoom "#general", msg
+    robot.messageRoom targetRoom, msg
     res.send 'OK'
 
