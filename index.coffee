@@ -13,6 +13,15 @@ module.exports = (robot) ->
     # this cannot be the best way to get a web link to the issue
     url = data.issue.self.replace /rest.*$/, "browse/" + data.issue.key
 
+    components = '';
+    first = true
+    for comp in data.issue.fields.components
+      if first
+        components = components + comp.name
+        first = false
+      else
+        components = components + ", " + comp.name
+
     if data.webhookEvent == "jira:issue_created"
 
       msg = 'New issue "' + data.issue.fields.summary + '"'
@@ -51,6 +60,7 @@ module.exports = (robot) ->
     else
       msg = "A " + data.webhookEvent + " happened on " + url
 
+    msg = "[" + components + "] " + msg
     robot.messageRoom targetRoom, msg
     res.send 'OK'
 
